@@ -2,28 +2,36 @@ require "rspec_matcher_kata_banco/version"
 
 module RspecMatcherKataBanco
   RSpec::Matchers.define :represent do |expect|
-    index_errors = []
-    match do |actual|
-      expect.each_with_index do |e, i|
-        unless e == actual[i]
-          h = {
-            index: i,
-            actual: actual[i],
-            expected: e
-          }
-          index_errors << h
-        end
+    Error = Struct.new(:index, :actual, :expected) do
+      def actual
+        self[:actual].join("\n")
       end
-      index_errors.empty?
+
+      def expected
+        self[:expected].join("\n")
+      end
+
+      def to_s
+        "error found in index #{index} expected:\n#{expected}\nactual:\n#{actual}"
+      end
     end
 
-    failure_message_for_should do |actual|
-      formated_actual = format_array(actual)
-      formated_expected = format_array(expected)
-      "expected\n#{formated_actual}\nto represent\n#{formated_expected}\n" +
-      index_errors.map { |error|
-        "error found in index #{error[:index]} expected:\n#{format_simple_array(error[:expected])}\nactual:\n#{format_simple_array(error[:actual])}"
-      }.join("\n")
+    errors = []
+    match do |actual|
+      expect.zip(actual).each_with_index do |(e, a), i|
+        errors << Error.new(i, a, e) if e != a
+      end
+      errors.empty?
+    end
+
+    failure_message do |actual|
+      <<~HEREDOC
+        expected
+        #{format_array(actual)}
+        to represent
+        #{format_array(expected)}
+        #{errors.join("\n")}
+      HEREDOC
     end
 
     def format_array(v)
@@ -32,10 +40,6 @@ module RspecMatcherKataBanco
         v.map { |x| x[1] }.join,
         v.map { |x| x[2] }.join
       ].join("\n")
-    end
-
-    def format_simple_array(v)
-      v.join("\n")
     end
   end
 end

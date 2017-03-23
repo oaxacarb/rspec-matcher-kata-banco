@@ -9,16 +9,12 @@ TODO: Delete this and the text above, and describe your gem
 Add this line to your application's Gemfile:
 
 ```ruby
-gem 'rspec_matcher_kata_banco'
+gem 'rspec_matcher_kata_banco', github: "oaxacarb/rspec_matcher_kata_banco"
 ```
 
 And then execute:
 
     $ bundle
-
-Or install it yourself as:
-
-    $ gem install rspec_matcher_kata_banco
 
 ## Usage
 
